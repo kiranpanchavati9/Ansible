@@ -430,6 +430,32 @@ frontend[01:20].xyz.com
 [root@ansible-control-node Python-3.13.0]# 
 ```
 
+## Inventory from Command Line
+
+Ansible also supports defining inventory **directly from the CLI**, without a file.
+This is useful when there are only a few nodes and we don’t need to maintain a static inventory file.
+
+Example:
+
+```bash
+ansible -i frontend001.xyz.com,10.4.1.10, all --list-hosts
+
+[root@ansible-control-node Python-3.13.0]# ansible -i frontend001.xyz.com,10.4.1.10, all --list-hosts
+  hosts (2):
+    frontend001.xyz.com
+    10.4.1.10
+[root@ansible-control-node Python-3.13.0]# 
+
+```
+
+---
+
+> ⚠️ **Note:**
+> When passing hosts directly using `-i`, you **must include a comma ( , )** after the host list.
+> Otherwise, Ansible assumes the input is a filename instead of host entries.
+
+
+
 
 
 

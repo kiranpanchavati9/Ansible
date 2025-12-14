@@ -70,6 +70,11 @@
         src: mongo.repo # Path on the Ansible control machine
         dest: /etc/yum.repos.d/mongo.repo     # Path on the remote host
 
+    - name: Install MongoDB shell (mongosh)
+      ansible.builtin.dnf:
+        name: mongodb-mongosh
+        state: present
+
     - name: Load Master Data
       community.mongodb.mongodb_shell:
         login_user: user

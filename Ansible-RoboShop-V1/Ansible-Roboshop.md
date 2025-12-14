@@ -117,5 +117,6 @@ The playbook was further enhanced to complete the frontend setup with the follow
 ```log
 PLAY RECAP
 frontend-dev.kiranpanchavati.online : ok=8    changed=6    unreachable=0    failed=0
+```
 
-
+![img.png](img.png)

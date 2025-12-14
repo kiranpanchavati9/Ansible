@@ -1,0 +1,8 @@
+- name: Sample Playbook
+  hosts: all
+  tasks:
+    - ping:
+      name: Ping Module
+    - debug:
+        msg: Hello World
+      name: Print Hello World

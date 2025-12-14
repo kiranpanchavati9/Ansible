@@ -77,8 +77,6 @@
 
     - name: Load Master Data
       community.mongodb.mongodb_shell:
-        login_user: user
-        login_password: secret
         file: "/app/db/master-data.js"
         login_host: mongod-dev.kiranpanchavati.online
         idempotent: yes

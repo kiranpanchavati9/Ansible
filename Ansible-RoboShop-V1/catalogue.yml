@@ -49,6 +49,11 @@
         path: /app
         state: directory
 
+    - name: Install unzip
+      ansible.builtin.dnf:
+        name: unzip
+        state: present
+
     - name: Download and extract app content
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip

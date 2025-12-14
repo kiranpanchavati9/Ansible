@@ -228,3 +228,71 @@ mongod-dev.kiranpanchavati.online : ok=6 changed=4 failed=0
 **MongoDB setup completed successfully.**
 
 
+## Catalogue Setup – Execution Result
+
+The Catalogue Ansible playbook executed successfully on the target server.
+
+### Command Used
+```bash
+ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i catalogue-dev.kiranpanchavati.online, catalogue.yml \
+-e ansible_user=root \
+-e ansible_password='DevOps@123$%1S'
+````
+
+### Execution Output
+
+```log
+PLAY [Catalogue Setup]
+
+TASK [Gathering Facts]
+ok: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Install NodeJS 20]
+ok: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Add the user 'roboshop']
+ok: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Remove app directory]
+changed: [catalogue-dev.kiranpanchavati.online]
+
+TASK [create app directory]
+changed: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Install unzip]
+ok: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Download and extract app content]
+changed: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Install packages based on package.json.]
+changed: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Copy the MongoDB Repo File]
+ok: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Install MongoDB shell (mongosh)]
+ok: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Load Master Data]
+changed: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Copy Catalogue Service file]
+changed: [catalogue-dev.kiranpanchavati.online]
+
+TASK [Start Catalogue service]
+changed: [catalogue-dev.kiranpanchavati.online]
+
+PLAY RECAP
+catalogue-dev.kiranpanchavati.online : ok=13 changed=7 failed=0
+```
+
+### Status
+
+* Catalogue service deployed successfully
+* Application dependencies installed
+* MongoDB master data loaded
+* Service started without errors
+
+
+

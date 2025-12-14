@@ -23,6 +23,11 @@
         name: '@nginx:1.24'
         state: present
 
+    - name: Install unzip
+      ansible.builtin.dnf:
+        name: unzip
+        state: present
+
     - name: Remove default html directory
       ansible.builtin.file:
         path: /usr/share/nginx/html/

@@ -179,3 +179,52 @@ frontend-dev.kiranpanchavati.online : ok=9    changed=5    unreachable=0    fail
 [root@ansible-control-node Ansible-RoboShop-V1]# 
 
 ```
+
+
+## MongoDB Setup – Execution Result
+
+The MongoDB Ansible playbook executed successfully on the target server.
+
+### Tasks Performed
+- MongoDB repository file was copied.
+- MongoDB was installed.
+- `mongod.conf` was updated to allow remote connections.
+- MongoDB service was enabled and restarted.
+
+### Command Used
+```bash
+ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i mongod-dev.kiranpanchavati.online, mongodb.yml \
+-e ansible_user=root \
+-e ansible_password='DevOps@123$%1S'
+````
+
+### Execution Output
+
+```log
+PLAY [MongoDB Setup]
+
+TASK [Gathering Facts]
+ok: [mongod-dev.kiranpanchavati.online]
+
+TASK [Copy the MongoDB Repo File]
+changed: [mongod-dev.kiranpanchavati.online]
+
+TASK [Install MongoDB]
+changed: [mongod-dev.kiranpanchavati.online]
+
+TASK [Replace old hostname with new hostname]
+changed: [mongod-dev.kiranpanchavati.online]
+
+TASK [Enable MongoDB service]
+ok: [mongod-dev.kiranpanchavati.online]
+
+TASK [Restart MongoDB service]
+changed: [mongod-dev.kiranpanchavati.online]
+
+PLAY RECAP
+mongod-dev.kiranpanchavati.online : ok=6 changed=4 failed=0
+```
+
+**MongoDB setup completed successfully.**
+
+

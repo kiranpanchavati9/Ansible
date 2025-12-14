@@ -14,7 +14,7 @@
   tasks:
     - name: Copy the MongoDB Repo File
       ansible.builtin.copy:
-          src: /mongo.repo # Path on the Ansible control machine
+          src: mongo.repo # Path on the Ansible control machine
           dest: /etc/yum.repos.d/mongo.repo     # Path on the remote host
 
     - name: Install MongoDB

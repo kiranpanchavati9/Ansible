@@ -9,7 +9,7 @@
 #systemctl start mongod
 
 - name: MongoDB Setup
-  hosts: All
+  hosts: all
   become: true
   tasks:
     - name: Copy the MongoDB Repo File

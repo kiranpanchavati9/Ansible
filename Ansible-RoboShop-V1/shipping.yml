@@ -102,7 +102,7 @@
         remote_src: yes
         owner: roboshop
         group: roboshop
-      notify: Restart User
+      notify: Restart Shipping
 
     - name: Install maven dependencies
       ansible.builtin.shell: mvn clean package; mv target/shipping-1.0.jar shipping.jar

@@ -1,116 +1,95 @@
+#dnf module disable nodejs -y
+#dnf module enable nodejs:20 -y
+#
+#dnf install nodejs -y
+#
+#useradd roboshop
+#
+#cp catalogue.service /etc/systemd/system/catalogue.service
+#cp mongo.repo /etc/yum.repos.d/mongo.repo
+#
+#mkdir /app
+#
+#curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
+#cd /app
+#unzip /tmp/catalogue.zip
+#
+#cd /app
+#npm install
+#
+#dnf install mongodb-mongosh -y
+#mongosh --host mongod-dev.kiranpanchavati.online </app/db/master-data.js
+#
+#systemctl daemon-reload
+#
+#systemctl enable catalogue
+#systemctl restart catalogue
+#
+
 - name: Catalogue Setup
   hosts: all
   become: true
-
-  vars:
-    mongo_host: mongod-dev.kiranpanchavati.online
-
   tasks:
-
-    # -------------------------------------------------
-    # NodeJS Setup (matches manual steps)
-    # -------------------------------------------------
-    - name: Disable default NodeJS module
-      ansible.builtin.shell: dnf module disable nodejs -y
-
-    - name: Enable NodeJS 20 module
-      ansible.builtin.shell: dnf module enable nodejs:20 -y
-
-    - name: Install NodeJS
+    - name: Install NodeJS 20
       ansible.builtin.dnf:
-        name: nodejs
+        name: '@nodejs:20'
         state: present
 
-    # -------------------------------------------------
-    # Application User
-    # -------------------------------------------------
-    - name: Create roboshop user
+    - name: Add the user 'roboshop'
       ansible.builtin.user:
         name: roboshop
 
-    # -------------------------------------------------
-    # Application Directory
-    # -------------------------------------------------
-    - name: Remove existing app directory
+    - name: Remove app directory
       ansible.builtin.file:
         path: /app
         state: absent
 
-    - name: Create app directory
+    - name: create app directory
       ansible.builtin.file:
         path: /app
         state: directory
-        owner: roboshop
-        group: roboshop
 
-    # -------------------------------------------------
-    # Application Code
-    # -------------------------------------------------
     - name: Install unzip
       ansible.builtin.dnf:
         name: unzip
         state: present
 
-    - name: Download and extract catalogue application
+    - name: Download and extract app content
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
         dest: /app
         remote_src: yes
-        owner: roboshop
-        group: roboshop
 
-    - name: Install NodeJS dependencies
+    - name: Install packages based on package.json.
       community.general.npm:
         path: /app
 
-    # -------------------------------------------------
-    # MongoDB Client & Data
-    # -------------------------------------------------
-    - name: Copy MongoDB repo file
-      ansible.builtin.copy:
-        src: mongo.repo
-        dest: /etc/yum.repos.d/mongo.repo
 
-    - name: Install MongoDB shell
+    - name: Copy the MongoDB Repo File
+      ansible.builtin.copy:
+        src: mongo.repo # Path on the Ansible control machine
+        dest: /etc/yum.repos.d/mongo.repo     # Path on the remote host
+
+    - name: Install MongoDB shell (mongosh)
       ansible.builtin.dnf:
         name: mongodb-mongosh
         state: present
 
-    - name: Load catalogue master data
+    - name: Load Master Data
       community.mongodb.mongodb_shell:
-        file: /app/db/master-data.js
-        login_host: "{{ mongo_host }}"
+        file: "/app/db/master-data.js"
+        login_host: mongod-dev.kiranpanchavati.online
         idempotent: yes
 
-
-    - name: Ensure catalogue categories exist
-      community.mongodb.mongodb_shell:
-        login_host: "{{ mongo_host }}"
-        db: catalogue
-        eval: |
-          if (db.categories.countDocuments() === 0) {
-          db.categories.insertMany([
-          { name: "Robot" },
-          { name: "Artificial Intelligence" }
-          ])
-          }
-
-
-
-    # -------------------------------------------------
-    # Systemd Service
-    # -------------------------------------------------
-    - name: Copy catalogue service file
+    - name: Copy Catalogue Service file
       ansible.builtin.copy:
         src: catalogue.service
         dest: /etc/systemd/system/catalogue.service
 
-    - name: Reload systemd
+    - name: Start Catalogue service
       ansible.builtin.systemd_service:
-        daemon_reload: true
-
-    - name: Enable and restart catalogue service
-      ansible.builtin.systemd_service:
+        state: restarted
         name: catalogue
         enabled: true
-        state: restarted
+        daemon_reload: true
+

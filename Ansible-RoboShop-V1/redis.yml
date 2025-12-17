@@ -30,8 +30,14 @@
         regexp: '127.0.0.1'
         replace: '0.0.0.0'
 
-#    - name: Install Redis Protected Mode
-#      ansible.builtin.replace:
-#        path: /etc/redis/redis.conf
-#        regexp: '127.0.0.1'
-#        replace: '0.0.0.0'
+    - name: Install Redis Protected Mode
+      ansible.builtin.replace:
+        path: /etc/redis/redis.conf
+        regexp: 'protected-mode yes'
+        replace: 'protected-mode no'
+
+    - name: Restart Redis service
+      ansible.builtin.systemd_service:
+        state: restarted
+        name: redis
+        enabled: true

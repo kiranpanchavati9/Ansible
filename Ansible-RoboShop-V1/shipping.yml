@@ -1,0 +1,168 @@
+# Shipping.sh Script
+
+#dnf install maven -y
+
+#useradd roboshop
+#cp shipping.service /etc/systemd/system/shipping.service
+
+#mkdir /app
+
+#curl -L -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip
+#cd /app
+#unzip /tmp/shipping.zip
+
+#cd /app
+##mvn clean package
+#mv target/shipping-1.0.jar shipping.jar
+
+#dnf install mysql -y
+#mysql -h mysql-dev.kiranpanchavati.online -uroot -pRoboShop@1 < /app/db/schema.sql
+#mysql -h mysql-dev.kiranpanchavati.online -uroot -pRoboShop@1 < /app/db/app-user.sql
+#mysql -h mysql-dev.kiranpanchavati.online -uroot -pRoboShop@1 < /app/db/master-data.sql
+
+
+#systemctl restart shipping
+
+
+#systemctl daemon-reload
+
+
+#systemctl enable shipping
+#systemctl restart shipping
+
+
+# Shipping.sh Script
+
+#dnf install maven -y
+#
+#id roboshop || useradd roboshop
+#cp shipping.service /etc/systemd/system/shipping.service
+#
+#mkdir -p /app
+#
+#curl -L -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip
+#cd /app
+#unzip -o /tmp/shipping.zip
+#
+#cd /app
+#mvn clean package
+#mv target/shipping-1.0.jar shipping.jar
+#
+## Install MySQL client package
+#dnf install mysql -y
+#
+## Load DB schema and data using roboshop user
+#mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/schema.sql
+#mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/app-user.sql
+#mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/master-data.sql
+#
+#systemctl daemon-reload
+#systemctl enable shipping
+#systemctl restart shipping
+
+
+
+- name: Shipping Setup
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Disable Maven
+      ansible.builtin.dnf:
+        name: maven
+        state: absent
+
+    - name: Install Maven
+      ansible.builtin.dnf:
+        name: 'maven'
+        state: present
+
+    - name: Install required utilities
+      ansible.builtin.dnf:
+        name:
+          - unzip
+          - tar
+        state: present
+
+    - name: Add the user 'roboshop'
+      ansible.builtin.user:
+        name: roboshop
+
+    - name: create app directory
+      ansible.builtin.file:
+        path: /app
+        state: directory
+        owner: roboshop
+        group: roboshop
+
+    - name: Download and extract app content
+      ansible.builtin.unarchive:
+        src: https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip
+        dest: /app
+        remote_src: yes
+        owner: roboshop
+        group: roboshop
+      notify: Restart User
+
+    - name: Install maven dependencies
+      ansible.builtin.shell: mvn clean package; mv target/shipping-1.0.jar shipping.jar
+      args:
+        chdir: /app/
+
+    - name: Install mysql client
+      ansible.builtin.dnf:
+        name: mysql
+        state: present
+
+    ## Load DB schema and data using roboshop user
+    #mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/schema.sql
+    #mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/app-user.sql
+    #mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/master-data.sql
+
+
+
+    # Import of sql script with encoding option
+    - name: Load Schema
+      community.mysql.mysql_db:
+        state: import
+        name: all
+        target: /app/db/schema.sql
+        login_user: uroboshop
+        login_password: pRoboShop@1
+        login_host: mysql-dev.kiranpanchavati.online
+
+
+    - name: Load Users Setup
+      community.mysql.mysql_db:
+        state: import
+        name: all
+        target: /app/db/app-user.sql
+        login_user: uroboshop
+        login_password: pRoboShop@1
+        login_host: mysql-dev.kiranpanchavati.online
+
+    - name: Load Master Data
+      community.mysql.mysql_db:
+        state: import
+        name: all
+        target: /app/db/master-data.sql
+        login_user: uroboshop
+        login_password: pRoboShop@1
+        login_host: mysql-dev.kiranpanchavati.online
+
+    - name: Copy Shipping service file
+      ansible.builtin.copy:
+        src: shipping.service
+        dest: /etc/systemd/system/shipping.service
+
+    - name: Enable Shipping service
+      ansible.builtin.systemd:
+        name: shipping
+        enabled: true
+        daemon_reload: true
+
+  handlers:
+    - name: Restart Shipping
+      ansible.builtin.systemd:
+        name: shipping
+        state: restarted

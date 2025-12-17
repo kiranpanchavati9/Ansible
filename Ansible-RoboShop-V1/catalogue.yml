@@ -76,10 +76,7 @@
         state: present
 
     - name: Load Master Data
-      community.mongodb.mongodb_shell:
-        file: "/app/db/master-data.js"
-        login_host: mongod-dev.kiranpanchavati.online
-        idempotent: yes
+      ansible.builtin.shell: mongosh --host mongod-dev.kiranpanchavati.online </app/db/master-data.js
 
     - name: Copy Catalogue Service file
       ansible.builtin.copy:

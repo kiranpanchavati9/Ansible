@@ -62,7 +62,7 @@
         remote_src: yes
         owner: roboshop
         group: roboshop
-      notify: Restart User
+      notify: Restart Cart
 
     - name: Install packages based on package.json
       community.general.npm:

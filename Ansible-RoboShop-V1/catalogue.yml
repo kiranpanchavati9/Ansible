@@ -1,94 +1,105 @@
-#dnf module disable nodejs -y
-#dnf module enable nodejs:20 -y
-#
-#dnf install nodejs -y
-#
-#useradd roboshop
-#
-#cp catalogue.service /etc/systemd/system/catalogue.service
-#cp mongo.repo /etc/yum.repos.d/mongo.repo
-#
-#mkdir /app
-#
-#curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
-#cd /app
-#unzip /tmp/catalogue.zip
-#
-#cd /app
-#npm install
-#
-#dnf install mongodb-mongosh -y
-#mongosh --host mongod-dev.kiranpanchavati.online </app/db/master-data.js
-#
-#systemctl daemon-reload
-#
-#systemctl enable catalogue
-#systemctl restart catalogue
-#
-
 - name: Catalogue Setup
   hosts: all
   become: true
+
+  vars:
+    mongo_host: mongod-dev.kiranpanchavati.online
+
   tasks:
-    - name: Install NodeJS 20
+
+    # -----------------------------
+    # NodeJS Setup
+    # -----------------------------
+    - name: Disable default NodeJS module
+      ansible.builtin.command: dnf module disable nodejs -y
+      args:
+        warn: false
+
+    - name: Enable NodeJS 20 module
+      ansible.builtin.command: dnf module enable nodejs:20 -y
+      args:
+        warn: false
+
+    - name: Install NodeJS
       ansible.builtin.dnf:
-        name: '@nodejs:20'
+        name: nodejs
         state: present
 
-    - name: Add the user 'roboshop'
+    # -----------------------------
+    # Application User
+    # -----------------------------
+    - name: Create roboshop user
       ansible.builtin.user:
         name: roboshop
 
-    - name: Remove app directory
+    # -----------------------------
+    # App Directory
+    # -----------------------------
+    - name: Remove existing app directory
       ansible.builtin.file:
         path: /app
         state: absent
 
-    - name: create app directory
+    - name: Create app directory
       ansible.builtin.file:
         path: /app
         state: directory
+        owner: roboshop
+        group: roboshop
 
+    # -----------------------------
+    # Application Code
+    # -----------------------------
     - name: Install unzip
       ansible.builtin.dnf:
         name: unzip
         state: present
 
-    - name: Download and extract app content
+    - name: Download and extract catalogue application
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
         dest: /app
         remote_src: yes
+        owner: roboshop
+        group: roboshop
 
-    - name: Install packages based on package.json.
+    - name: Install NodeJS dependencies
       community.general.npm:
         path: /app
 
-
-    - name: Copy the MongoDB Repo File
+    # -----------------------------
+    # MongoDB Client & Data
+    # -----------------------------
+    - name: Copy MongoDB repo file
       ansible.builtin.copy:
-        src: mongo.repo # Path on the Ansible control machine
-        dest: /etc/yum.repos.d/mongo.repo     # Path on the remote host
+        src: mongo.repo
+        dest: /etc/yum.repos.d/mongo.repo
 
-    - name: Install MongoDB shell (mongosh)
+    - name: Install MongoDB shell
       ansible.builtin.dnf:
         name: mongodb-mongosh
         state: present
 
-    - name: Load Master Data
+    - name: Load catalogue master data
       community.mongodb.mongodb_shell:
-        file: "/app/db/master-data.js"
-        login_host: mongod-dev.kiranpanchavati.online
+        file: /app/db/master-data.js
+        login_host: "{{ mongo_host }}"
         idempotent: yes
 
-    - name: Copy Catalogue Service file
+    # -----------------------------
+    # Systemd Service
+    # -----------------------------
+    - name: Copy catalogue service file
       ansible.builtin.copy:
         src: catalogue.service
         dest: /etc/systemd/system/catalogue.service
 
-    - name: Start Catalogue service
+    - name: Reload systemd
       ansible.builtin.systemd_service:
-        state: restarted
+        daemon_reload: true
+
+    - name: Enable and restart catalogue service
+      ansible.builtin.systemd_service:
         name: catalogue
         enabled: true
-        daemon_reload: true
+        state: restarted

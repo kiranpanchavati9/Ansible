@@ -34,12 +34,15 @@
         state: started
         enabled: true
 
-    - name: Set MySQL root password
+    - name: Set MySQL root password (first run only)
       ansible.builtin.shell: |
         mysql -uroot <<EOF
-        ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'RoboShop@1';
+        ALTER USER 'root'@'localhost'
+        IDENTIFIED WITH mysql_native_password BY 'RoboShop@1';
         FLUSH PRIVILEGES;
         EOF
+        touch /root/.mysql_root_password_set
       args:
         creates: /root/.mysql_root_password_set
+
 

@@ -12,10 +12,16 @@
 - name: Redis Setup
   hosts: all
   become: true
+
   tasks:
-    - name: Install Redis 7
+    - name: Enable Redis 7 module
+      ansible.builtin.command: dnf module enable redis:7 -y
+      args:
+        creates: /etc/dnf/modules.d/redis.module
+
+    - name: Install Redis
       ansible.builtin.dnf:
-        name: redis:7
+        name: redis
         state: present
 
     - name: Install Redis Listen Address

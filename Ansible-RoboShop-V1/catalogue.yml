@@ -7,34 +7,30 @@
 
   tasks:
 
-    # -----------------------------
-    # NodeJS Setup
-    # -----------------------------
+    # -------------------------------------------------
+    # NodeJS Setup (matches manual steps)
+    # -------------------------------------------------
     - name: Disable default NodeJS module
-      ansible.builtin.command: dnf module disable nodejs -y
-      args:
-        warn: false
+      ansible.builtin.shell: dnf module disable nodejs -y
 
     - name: Enable NodeJS 20 module
-      ansible.builtin.command: dnf module enable nodejs:20 -y
-      args:
-        warn: false
+      ansible.builtin.shell: dnf module enable nodejs:20 -y
 
     - name: Install NodeJS
       ansible.builtin.dnf:
         name: nodejs
         state: present
 
-    # -----------------------------
+    # -------------------------------------------------
     # Application User
-    # -----------------------------
+    # -------------------------------------------------
     - name: Create roboshop user
       ansible.builtin.user:
         name: roboshop
 
-    # -----------------------------
-    # App Directory
-    # -----------------------------
+    # -------------------------------------------------
+    # Application Directory
+    # -------------------------------------------------
     - name: Remove existing app directory
       ansible.builtin.file:
         path: /app
@@ -47,9 +43,9 @@
         owner: roboshop
         group: roboshop
 
-    # -----------------------------
+    # -------------------------------------------------
     # Application Code
-    # -----------------------------
+    # -------------------------------------------------
     - name: Install unzip
       ansible.builtin.dnf:
         name: unzip
@@ -67,9 +63,9 @@
       community.general.npm:
         path: /app
 
-    # -----------------------------
+    # -------------------------------------------------
     # MongoDB Client & Data
-    # -----------------------------
+    # -------------------------------------------------
     - name: Copy MongoDB repo file
       ansible.builtin.copy:
         src: mongo.repo
@@ -86,9 +82,9 @@
         login_host: "{{ mongo_host }}"
         idempotent: yes
 
-    # -----------------------------
+    # -------------------------------------------------
     # Systemd Service
-    # -----------------------------
+    # -------------------------------------------------
     - name: Copy catalogue service file
       ansible.builtin.copy:
         src: catalogue.service

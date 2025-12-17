@@ -82,6 +82,21 @@
         login_host: "{{ mongo_host }}"
         idempotent: yes
 
+
+    - name: Ensure catalogue categories exist
+      community.mongodb.mongodb_shell:
+        login_host: "{{ mongo_host }}"
+        db: catalogue
+        eval: |
+          if (db.categories.countDocuments() === 0) {
+          db.categories.insertMany([
+          { name: "Robot" },
+          { name: "Artificial Intelligence" }
+          ])
+          }
+
+
+
     # -------------------------------------------------
     # Systemd Service
     # -------------------------------------------------

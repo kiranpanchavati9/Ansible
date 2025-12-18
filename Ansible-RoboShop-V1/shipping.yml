@@ -50,6 +50,8 @@
       args:
         chdir: /app
       become_user: roboshop
+      async: 1800
+      poll: 20
 
     - name: Install MySQL client
       ansible.builtin.dnf:

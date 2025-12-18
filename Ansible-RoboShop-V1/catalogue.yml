@@ -29,12 +29,12 @@
 - name: Catalogue Setup
   hosts: all
   become: true
+
   tasks:
     - name: Disable NodeJS default module
       ansible.builtin.dnf:
         name: nodejs
         state: absent
-      # Sometimes required to clear conflicts before enabling a stream
 
     - name: Install NodeJS 20
       ansible.builtin.dnf:
@@ -45,57 +45,80 @@
       ansible.builtin.user:
         name: roboshop
 
-    - name: create app directory
+    - name: Create /app directory
       ansible.builtin.file:
         path: /app
         state: directory
+        owner: roboshop
+        group: roboshop
 
-    - name: Download and extract app content
+    - name: Download and extract catalogue app
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
         dest: /app
         remote_src: yes
-      notify: Restart Catalogue # Only restart if code changes
+        owner: roboshop
+        group: roboshop
+      notify: Restart Catalogue
 
-    - name: Install packages based on package.json
+    - name: Install npm dependencies
       community.general.npm:
         path: /app
 
-    - name: Copy the MongoDB Repo File
+    - name: Copy MongoDB repo file
       ansible.builtin.copy:
         src: mongo.repo
         dest: /etc/yum.repos.d/mongo.repo
 
-    - name: Install MongoDB shell (mongosh)
+    - name: Install MongoDB shell
       ansible.builtin.dnf:
         name: mongodb-mongosh
         state: present
 
-    - name: Check if Master Data is already loaded
-      ansible.builtin.command: mongosh --host mongod-dev.kiranpanchavati.online --quiet --eval 'db.products.count()'
+    # ---------- FIXED MONGODB SECTION ----------
+
+    - name: Check product collection count (CORRECT)
+      ansible.builtin.shell: |
+        mongosh --host mongod-dev.kiranpanchavati.online --quiet <<'EOF'
+        db = db.getSiblingDB("catalogue");
+        print(db.product.countDocuments());
+        EOF
       register: product_count
-      ignore_errors: true
       changed_when: false
 
-    - name: Load Master Data
-      ansible.builtin.shell: mongosh --host mongod-dev.kiranpanchavati.online </app/db/master-data.js
-      when: product_count.stdout == "0" # Only run if count is 0
+    - name: Load master data if product collection is empty
+      ansible.builtin.shell: |
+        mongosh --host mongod-dev.kiranpanchavati.online <<'EOF'
+        db = db.getSiblingDB("catalogue");
 
-    - name: Copy Catalogue Service file
+        if (db.product.countDocuments() === 0) {
+          load("/app/db/master-data.js");
+        }
+
+        if (db.getCollectionNames().includes("products")) {
+          db.products.renameCollection("product");
+        }
+        EOF
+      when: product_count.stdout | trim == "0"
+
+    # ------------------------------------------
+
+    - name: Copy Catalogue service file
       ansible.builtin.copy:
         src: catalogue.service
         dest: /etc/systemd/system/catalogue.service
-      notify: Restart Catalogue # Only restart if service file changes
+      notify: Restart Catalogue
 
     - name: Enable Catalogue service
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: catalogue
         enabled: true
         daemon_reload: true
 
   handlers:
     - name: Restart Catalogue
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: catalogue
         state: restarted
+
 

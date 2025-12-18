@@ -1,5 +1,5 @@
 - name: Shipping Setup
-  hosts: shipping
+  hosts: all
   become: true
   vars:
     mysql_host: mysql-dev.kiranpanchavati.online

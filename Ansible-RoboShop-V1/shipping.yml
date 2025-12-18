@@ -111,13 +111,14 @@
         state: import
         name: all
         target: "{{ db_user_path }}"
-        login_user: "{{ mysql_user }}"
-        login_password: "{{ mysql_password }}"
+        login_user: root
+        login_password: RoboShop@1
         login_host: "{{ mysql_host }}"
       delegate_to: localhost
       run_once: true
       vars:
         ansible_python_interpreter: /usr/bin/python3
+
 
     - name: Load master data
       community.mysql.mysql_db:

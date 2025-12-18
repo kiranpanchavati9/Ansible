@@ -106,18 +106,21 @@
       vars:
         ansible_python_interpreter: /usr/bin/python3
 
-    - name: Load DB users
-      community.mysql.mysql_db:
-        state: import
-        name: all
-        target: "{{ db_user_path }}"
-        login_user: root
-        login_password: RoboShop@1
+    - name: Create shipping DB user
+      community.mysql.mysql_user:
+        name: shipping
+        password: shipping123
+        host: "%"
+        priv: "cities.*:ALL"
+        state: present
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ mysql_password }}"
         login_host: "{{ mysql_host }}"
       delegate_to: localhost
       run_once: true
       vars:
         ansible_python_interpreter: /usr/bin/python3
+
 
 
     - name: Load master data

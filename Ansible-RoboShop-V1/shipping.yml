@@ -38,6 +38,15 @@
         owner: roboshop
         group: roboshop
 
+
+    - name: Ensure /app is owned by roboshop
+      ansible.builtin.file:
+        path: /app
+        owner: roboshop
+        group: roboshop
+        recurse: true
+
+
     - name: Build shipping application
       ansible.builtin.shell: |
         mvn clean package spring-boot:repackage -DskipTests

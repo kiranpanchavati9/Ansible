@@ -109,6 +109,12 @@
       args:
         chdir: /app/
 
+#    - name: Install MySQL-Python
+#      ansible.builtin.pip:
+#        name: bottle
+#        executable: pip3.13
+
+
     - name: Install mysql client
       ansible.builtin.dnf:
         name: mysql

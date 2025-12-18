@@ -40,11 +40,12 @@
 
     - name: Build shipping application
       ansible.builtin.shell: |
-        mvn clean package
-        mv target/shipping-1.0.jar shipping.jar
+        mvn clean package spring-boot:repackage
+        mv target/*.jar.original shipping.jar
       args:
         chdir: /app
       become_user: roboshop
+
 
     - name: Install MySQL client
       ansible.builtin.dnf:

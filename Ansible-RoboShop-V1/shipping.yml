@@ -50,10 +50,13 @@
       args:
         chdir: /app
       become_user: roboshop
-                     
-                     
-                     
-                     - name: Install MySQL client
+
+    - name: Install MySQL client
+      ansible.builtin.dnf:
+        name: mysql
+        state: present
+
+    - name: Install MySQL client
       ansible.builtin.dnf:
         name: mysql
         state: present

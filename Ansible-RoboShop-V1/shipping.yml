@@ -7,6 +7,8 @@
     mysql_password: RoboShop@1
 
   tasks:
+    # ---------------- BASIC SETUP ----------------
+
     - name: Install Maven
       ansible.builtin.dnf:
         name: maven
@@ -38,7 +40,6 @@
         owner: roboshop
         group: roboshop
 
-
     - name: Ensure /app is owned by roboshop
       ansible.builtin.file:
         path: /app
@@ -46,6 +47,7 @@
         group: roboshop
         recurse: true
 
+    # ---------------- BUILD APPLICATION ----------------
 
     - name: Build shipping application
       ansible.builtin.shell: |
@@ -62,17 +64,14 @@
       async: 1800
       poll: 20
 
-    - name: Install MySQL client
-      ansible.builtin.dnf:
-        name: mysql
-        state: present
+    # ---------------- MYSQL CLIENT ----------------
 
     - name: Install MySQL client
       ansible.builtin.dnf:
         name: mysql
         state: present
 
-    # ---------------- DATABASE TASKS (RUN ON CONTROL NODE) ----------------
+    # ---------------- DATABASE TASKS (CONTROL NODE) ----------------
 
     - name: Load DB schema
       community.mysql.mysql_db:
@@ -84,6 +83,8 @@
         login_host: "{{ mysql_host }}"
       delegate_to: localhost
       run_once: true
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
 
     - name: Load DB users
       community.mysql.mysql_db:
@@ -95,6 +96,8 @@
         login_host: "{{ mysql_host }}"
       delegate_to: localhost
       run_once: true
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
 
     - name: Load master data
       community.mysql.mysql_db:
@@ -106,6 +109,8 @@
         login_host: "{{ mysql_host }}"
       delegate_to: localhost
       run_once: true
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
 
     # ---------------- SHIPPING SERVICE ----------------
 

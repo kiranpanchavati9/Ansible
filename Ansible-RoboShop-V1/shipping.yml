@@ -1,10 +1,16 @@
 - name: Shipping Setup
   hosts: all
   become: true
+
   vars:
     mysql_host: mysql-dev.kiranpanchavati.online
     mysql_user: roboshop
     mysql_password: RoboShop@1
+
+    # SQL files must exist on CONTROL NODE
+    db_schema_path: /root/Ansible/Ansible-RoboShop-V1/db/schema.sql
+    db_user_path: /root/Ansible/Ansible-RoboShop-V1/db/app-user.sql
+    db_master_path: /root/Ansible/Ansible-RoboShop-V1/db/master-data.sql
 
   tasks:
     # ---------------- BASIC SETUP ----------------
@@ -73,11 +79,25 @@
 
     # ---------------- DATABASE TASKS (CONTROL NODE) ----------------
 
+    - name: Verify DB schema file exists on control node
+      ansible.builtin.stat:
+        path: "{{ db_schema_path }}"
+      delegate_to: localhost
+      run_once: true
+      register: schema_file
+
+    - name: Fail if DB schema file is missing
+      ansible.builtin.fail:
+        msg: "DB schema file not found on control node: {{ db_schema_path }}"
+      when: not schema_file.stat.exists
+      delegate_to: localhost
+      run_once: true
+
     - name: Load DB schema
       community.mysql.mysql_db:
         state: import
         name: all
-        target: /root/Ansible/Ansible-RoboShop-V1/db/schema.sql
+        target: "{{ db_schema_path }}"
         login_user: "{{ mysql_user }}"
         login_password: "{{ mysql_password }}"
         login_host: "{{ mysql_host }}"
@@ -90,7 +110,7 @@
       community.mysql.mysql_db:
         state: import
         name: all
-        target: /root/Ansible/Ansible-RoboShop-V1/db/app-user.sql
+        target: "{{ db_user_path }}"
         login_user: "{{ mysql_user }}"
         login_password: "{{ mysql_password }}"
         login_host: "{{ mysql_host }}"
@@ -103,7 +123,7 @@
       community.mysql.mysql_db:
         state: import
         name: all
-        target: /root/Ansible/Ansible-RoboShop-V1/db/master-data.sql
+        target: "{{ db_master_path }}"
         login_user: "{{ mysql_user }}"
         login_password: "{{ mysql_password }}"
         login_host: "{{ mysql_host }}"

@@ -27,7 +27,6 @@
 #systemctl enable shipping
 #systemctl restart shipping
 
-
 - name: Shipping Service Setup
   hosts: all
   become: true
@@ -91,13 +90,27 @@
         port: 3306
         timeout: 60
 
+    # -------------------------------------------------
+    # COPY DB FILES TO MYSQL SERVER (required for delegate_to)
+    # -------------------------------------------------
+    - name: Copy DB scripts to MySQL server
+      ansible.builtin.copy:
+        src: /app/db/
+        dest: /app/db/
+        remote_src: yes
+      delegate_to: mysql-dev-01.kiranpanchavati.online
+
+    # -------------------------------------------------
+    # DB OPERATIONS
+    # -------------------------------------------------
+
     - name: Load DB schema (run as roboshop)
       ansible.builtin.shell: |
         mysql -h mysql-dev-01.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/schema.sql
       args:
         executable: /bin/bash
 
-    - name: Load app-user data (run on MySQL server)
+    - name: Load app-user data (run locally on MySQL server as root)
       ansible.builtin.shell: |
         mysql -uroot -pRoboShop@1 < /app/db/app-user.sql
       args:
@@ -110,6 +123,9 @@
       args:
         executable: /bin/bash
 
+    # -------------------------------------------------
+    # SERVICE START
+    # -------------------------------------------------
 
     - name: Reload systemd
       ansible.builtin.systemd:
@@ -120,4 +136,5 @@
         name: shipping
         state: restarted
         enabled: yes
+
 

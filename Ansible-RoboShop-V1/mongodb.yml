@@ -11,25 +11,38 @@
 - name: MongoDB Setup
   hosts: all
   become: true
+
   tasks:
     - name: Copy Mongo Repo file
       ansible.builtin.copy:
         src: /root/Ansible/Ansible-RoboShop-V1/mongo.repo
         dest: /etc/yum.repos.d/mongo.repo
 
-    - name: Install MongoDB
+    - name: Install MongoDB Server
       ansible.builtin.dnf:
-        name: 'mongodb-org'
+        name: mongodb-org
         state: present
 
-    - name: Replace 127.0.0.1 with 0.0.0.0
+    - name: Install MongoDB Shell (mongo)
+      ansible.builtin.dnf:
+        name: mongodb-org-shell
+        state: present
+
+    # OPTIONAL (newer MongoDB versions)
+    - name: Install MongoDB Shell (mongosh)
+      ansible.builtin.dnf:
+        name: mongodb-mongosh
+        state: present
+      ignore_errors: yes
+
+    - name: Allow remote MongoDB access
       ansible.builtin.replace:
         path: /etc/mongod.conf
         regexp: '127.0.0.1'
-        replace: '0.0.0.0 '
+        replace: '0.0.0.0'
 
-    - name: Enable & Start MongoDB
-      ansible.builtin.systemd_service:
-        state: started
+    - name: Restart & Enable MongoDB
+      ansible.builtin.systemd:
         name: mongod
+        state: restarted
         enabled: true

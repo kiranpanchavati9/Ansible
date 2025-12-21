@@ -34,6 +34,11 @@
         path: /usr/share/nginx/html/
         state: directory
 
+    - name: Install the unzip
+      ansible.builtin.dnf:
+        name: unzip
+        state: latest
+
     - name: Download and Extract
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip

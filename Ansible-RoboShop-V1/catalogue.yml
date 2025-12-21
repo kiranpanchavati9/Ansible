@@ -46,11 +46,6 @@
         src: /root/Ansible/Ansible-RoboShop-V1/catalogue.service
         dest: /etc/systemd/system/catalogue.service
 
-    - name: Copy Mongo Repo file
-      ansible.builtin.copy:
-        src: /root/Ansible/Ansible-RoboShop-V1/mongo.repo
-        dest: /etc/yum.repos.d/mongo.repo
-
     - name: Create /app directory
       ansible.builtin.file:
         path: /app
@@ -77,9 +72,27 @@
         chdir: /app
       become_user: roboshop
 
-    - name: Load MongoDB schema
-      ansible.builtin.command: mongosh < /app/schema/catalogue.js
+    # ---------------- MongoDB client ----------------
+    - name: Install MongoDB Shell (mongosh)
+      ansible.builtin.dnf:
+        name: mongodb-mongosh
+        state: present
 
+    # ---------------- Idempotent schema load ----------------
+    - name: Check if catalogue data already exists
+      ansible.builtin.command: >
+        mongosh --host mongod-dev-01.kiranpanchavati.online
+        --quiet --eval "db.getSiblingDB('catalogue').products.countDocuments()"
+      register: catalogue_count
+      changed_when: false
+
+    - name: Load catalogue master data (only once)
+      ansible.builtin.command: >
+        mongosh --host mongod-dev-01.kiranpanchavati.online
+        < /app/db/master-data.js
+      when: catalogue_count.stdout | int == 0
+
+    # ---------------- Service handling ----------------
     - name: Reload systemd
       ansible.builtin.systemd:
         daemon_reload: yes
@@ -89,21 +102,3 @@
         name: catalogue
         state: restarted
         enabled: yes
-
-    - name: Install MongoDB
-      ansible.builtin.dnf:
-        name: 'mongodb-mongosh'
-        state: present
-
-    - name: Load master data script
-      ansible.builtin.shell: mongosh --host mongod-dev-01.kiranpanchavati.online </app/db/master-data.js
-
-    - name: Just force systemd to reread configs (2.4 and above)
-      ansible.builtin.systemd_service:
-        daemon_reload: true
-
-    - name: Start Catalogue services
-      ansible.builtin.systemd_service:
-        state: started
-        name: catalogue
-        enabled: true

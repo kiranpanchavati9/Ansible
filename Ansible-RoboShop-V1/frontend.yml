@@ -24,7 +24,7 @@
   tasks:
     - name: Install nginx 1.24-Frontend
       ansible.builtin.dnf:
-        name: '@nginx:1.24'
+        name: 'nginx'
         state: present
 
     - name: Remove the default HTML Directory

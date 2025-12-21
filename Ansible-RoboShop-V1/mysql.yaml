@@ -23,16 +23,10 @@
   hosts: all
   become: true
   tasks:
-
-    - name: Install Oracle MySQL RPMs
-      ansible.builtin.dnf:
-        name:
-          - /tmp/mysql-community-common-*.rpm
-          - /tmp/mysql-community-libs-*.rpm
-          - /tmp/mysql-community-client-*.rpm
-          - /tmp/mysql-community-server-*.rpm
-        state: present
-        disable_gpg_check: true
+    - name: Download MySQL RPM from internal repo
+      ansible.builtin.get_url:
+        url: http://repo.internal/mysql/mysql-community-server.rpm
+        dest: /tmp/mysql-community-server.rpm
 
     - name: Enable and start MySQL
       ansible.builtin.service:

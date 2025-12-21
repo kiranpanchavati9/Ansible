@@ -32,5 +32,5 @@
   tasks:
     - name: Install NodeJS
       ansible.builtin.dnf:
-        name: '@nodejs:20'
+        name: 'nodejs'
         state: present

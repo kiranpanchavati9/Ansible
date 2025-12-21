@@ -19,19 +19,19 @@
 
     - name: Install Redis
       ansible.builtin.dnf:
-        name: '@redis:7'
+        name: redis
         state: present
 
     - name: Update listen address to 0.0.0.0
       ansible.builtin.replace:
         path: /etc/redis/redis.conf
-        regexp: 'bind 127.0.0.1'
+        regexp: '^bind .*'
         replace: 'bind 0.0.0.0'
 
     - name: Disable protected mode
       ansible.builtin.replace:
         path: /etc/redis/redis.conf
-        regexp: 'protected-mode yes'
+        regexp: '^protected-mode yes'
         replace: 'protected-mode no'
 
     - name: Enable & restart Redis service

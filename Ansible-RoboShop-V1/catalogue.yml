@@ -63,7 +63,7 @@
     - name: Download and Extract
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
-        dest: /tmp/catalogue.zip
+        dest: /app
         remote_src: yes
 
     - name: Run a command in /app directory

@@ -1,0 +1,21 @@
+#dnf module disable redis -y
+#dnf module enable redis:7 -y
+#
+#dnf install redis -y
+#
+#sed -i -e '/protected-mode/ c protected-mode no' -e 's/127.0.0.1/0.0.0.0/' /etc/redis/redis.conf
+#
+#systemctl enable redis
+#systemctl restart redis
+#
+
+- name: Redis Setup
+  hosts: all
+  become: true
+
+  tasks:
+    # ---------------- System prerequisites ----------------
+    - name: Install Redis
+      ansible.builtin.dnf:
+        name: redis
+        state: present

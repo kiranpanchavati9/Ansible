@@ -94,11 +94,12 @@
     # COPY DB FILES TO MYSQL SERVER (required for delegate_to)
     # -------------------------------------------------
     - name: Copy DB scripts from shipping to MySQL server
-      ansible.builtin.synchronize:
+      ansible.posix.synchronize:
         src: /app/db/
         dest: /app/db/
         mode: push
       delegate_to: shipping-dev-01.kiranpanchavati.online
+
 
     # -------------------------------------------------
     # DB OPERATIONS

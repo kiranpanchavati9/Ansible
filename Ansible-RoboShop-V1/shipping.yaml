@@ -85,19 +85,25 @@
         chdir: /app
       become_user: roboshop
 
-    - name: Load DB schema
+    - name: Wait for MySQL to be reachable
+      ansible.builtin.wait_for:
+        host: mysql-dev-01.kiranpanchavati.online
+        port: 3306
+        timeout: 60
+
+    - name: Load DB schema (run as roboshop)
       ansible.builtin.shell: |
         mysql -h mysql-dev-01.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/schema.sql
       args:
         executable: /bin/bash
 
-    - name: Load app-user data
+    - name: Load app-user data (run as root)
       ansible.builtin.shell: |
-        mysql -h mysql-dev-01.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/app-user.sql
+        mysql -h mysql-dev-01.kiranpanchavati.online -uroot -pRoboShop@1 < /app/db/app-user.sql
       args:
         executable: /bin/bash
 
-    - name: Load master data
+    - name: Load master data (run as roboshop)
       ansible.builtin.shell: |
         mysql -h mysql-dev-01.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/master-data.sql
       args:

@@ -1,0 +1,115 @@
+#
+#
+#dnf install maven -y
+#
+#id roboshop || useradd roboshop
+#cp shipping.service /etc/systemd/system/shipping.service
+#
+#mkdir -p /app
+#
+#curl -L -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip
+#cd /app
+#unzip -o /tmp/shipping.zip
+#
+#cd /app
+#mvn clean package
+#mv target/shipping-1.0.jar shipping.jar
+#
+## Install MySQL client package
+#dnf install mysql -y
+#
+## Load DB schema and data using roboshop user
+#mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/schema.sql
+#mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/app-user.sql
+#mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/master-data.sql
+#
+#systemctl daemon-reload
+#systemctl enable shipping
+#systemctl restart shipping
+
+
+- name: Shipping Service Setup
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Install required packages
+      ansible.builtin.dnf:
+        name:
+          - maven
+          - unzip
+          - mysql
+        state: present
+
+    - name: Ensure roboshop user exists
+      ansible.builtin.user:
+        name: roboshop
+
+    - name: Copy shipping systemd service file
+      ansible.builtin.copy:
+        src: shipping.service
+        dest: /etc/systemd/system/shipping.service
+        mode: '0644'
+
+    - name: Create /app directory
+      ansible.builtin.file:
+        path: /app
+        state: directory
+        owner: roboshop
+        group: roboshop
+
+    - name: Download shipping artifact
+      ansible.builtin.get_url:
+        url: https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip
+        dest: /tmp/shipping.zip
+        mode: '0644'
+
+    - name: Extract shipping artifact
+      ansible.builtin.unarchive:
+        src: /tmp/shipping.zip
+        dest: /app
+        remote_src: yes
+        owner: roboshop
+        group: roboshop
+
+    - name: Build shipping application using Maven
+      ansible.builtin.command: mvn clean package
+      args:
+        chdir: /app
+      become_user: roboshop
+
+    - name: Rename shipping jar
+      ansible.builtin.command: mv target/shipping-1.0.jar shipping.jar
+      args:
+        chdir: /app
+      become_user: roboshop
+
+    - name: Load DB schema
+      ansible.builtin.shell: |
+        mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/schema.sql
+      args:
+        executable: /bin/bash
+
+    - name: Load app-user data
+      ansible.builtin.shell: |
+        mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/app-user.sql
+      args:
+        executable: /bin/bash
+
+    - name: Load master data
+      ansible.builtin.shell: |
+        mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/master-data.sql
+      args:
+        executable: /bin/bash
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable and restart shipping service
+      ansible.builtin.service:
+        name: shipping
+        state: restarted
+        enabled: yes
+

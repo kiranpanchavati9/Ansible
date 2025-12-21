@@ -23,16 +23,16 @@
   hosts: all
   become: true
   tasks:
-
-
-    - name: Install the Repository Package
+    - name: Install the MySQL Repository Package
       ansible.builtin.dnf:
-        name: dev.mysql.com
-        state: latest
+        # This URL is for RHEL 9; adjust if you are using RHEL 8
+        name: https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+        state: present
+        disable_gpg_check: true
 
-    - name: Install the latest version of MySQL Server
+    - name: Install MySQL Server
       ansible.builtin.dnf:
-        name: mysql-server
+        name: mysql-community-server
         state: latest
 
 

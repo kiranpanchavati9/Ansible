@@ -20,7 +20,6 @@
 #systemctl enable user
 #systemctl restart user
 
-
 - name: User Setup (Rocky Linux 10)
   hosts: all
   become: true
@@ -29,6 +28,17 @@
     - name: Install NodeSource NodeJS 20 repo
       ansible.builtin.shell: |
         curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+
+    - name: Add MongoDB repository
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/mongodb-org.repo
+        content: |
+          [mongodb-org-7.0]
+          name=MongoDB Repository
+          baseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/7.0/x86_64/
+          gpgcheck=1
+          enabled=1
+          gpgkey=https://pgp.mongodb.com/server-7.0.asc
 
     - name: Install NodeJS, Unzip, and Mongosh
       ansible.builtin.dnf:
@@ -78,4 +88,5 @@
         name: user
         state: restarted
         enabled: yes
+
 

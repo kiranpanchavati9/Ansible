@@ -97,17 +97,19 @@
       args:
         executable: /bin/bash
 
-    - name: Load app-user data (run as root)
+    - name: Load app-user data (run on MySQL server)
       ansible.builtin.shell: |
-        mysql -h mysql-dev-01.kiranpanchavati.online -uroot -pRoboShop@1 < /app/db/app-user.sql
+        mysql -uroot -pRoboShop@1 < /app/db/app-user.sql
       args:
         executable: /bin/bash
+      delegate_to: mysql-dev-01.kiranpanchavati.online
 
     - name: Load master data (run as roboshop)
       ansible.builtin.shell: |
         mysql -h mysql-dev-01.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/master-data.sql
       args:
         executable: /bin/bash
+
 
     - name: Reload systemd
       ansible.builtin.systemd:

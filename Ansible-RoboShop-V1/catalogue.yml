@@ -71,6 +71,12 @@
         cmd: ls -l
         chdir: /app
 
+    - name: Install NodeJS dependencies
+      ansible.builtin.command: npm install
+      args:
+        chdir: /app
+      become_user: roboshop
+
     - name: Install MongoDB
       ansible.builtin.dnf:
         name: 'mongodb-mongosh'

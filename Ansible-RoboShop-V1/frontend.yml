@@ -14,7 +14,6 @@
 #systemctl enable nginx
 #systemctl restart nginx
 
-
 - name: Frontend Setup
   hosts: all
   become: true
@@ -45,9 +44,9 @@
         dest: /usr/share/nginx/html
         remote_src: yes
 
-    - name: Copy file
+    - name: Copy nginx file
       ansible.builtin.copy:
-        src: /root/DevSecOps-Roboshop-Shell-V1/nginx.conf
+        src: /root/nginx.conf
         dest: /etc/nginx/nginx.conf
 
     - name: Start NGINX services

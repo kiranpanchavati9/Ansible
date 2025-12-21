@@ -90,20 +90,7 @@
         port: 3306
         timeout: 60
 
-    # -------------------------------------------------
-    # COPY DB FILES TO MYSQL SERVER (required for delegate_to)
-    # -------------------------------------------------
-    - name: Copy DB scripts from shipping to MySQL server
-      ansible.posix.synchronize:
-        src: /app/db/
-        dest: /app/db/
-        mode: push
-      delegate_to: shipping-dev-01.kiranpanchavati.online
-
-
-    # -------------------------------------------------
-    # DB OPERATIONS
-    # -------------------------------------------------
+    # ---------------- DB OPERATIONS ----------------
 
     - name: Load DB schema (run as roboshop)
       ansible.builtin.shell: |
@@ -111,9 +98,14 @@
       args:
         executable: /bin/bash
 
-    - name: Load app-user data (run locally on MySQL server as root)
+    - name: Read app-user.sql from shipping
+      ansible.builtin.slurp:
+        src: /app/db/app-user.sql
+      register: app_user_sql
+
+    - name: Run app-user.sql locally on MySQL server as root
       ansible.builtin.shell: |
-        mysql -uroot -pRoboShop@1 < /app/db/app-user.sql
+        mysql -uroot -pRoboShop@1 <<< "{{ app_user_sql.content | b64decode }}"
       args:
         executable: /bin/bash
       delegate_to: mysql-dev-01.kiranpanchavati.online
@@ -124,9 +116,7 @@
       args:
         executable: /bin/bash
 
-    # -------------------------------------------------
-    # SERVICE START
-    # -------------------------------------------------
+    # ---------------- SERVICE ----------------
 
     - name: Reload systemd
       ansible.builtin.systemd:

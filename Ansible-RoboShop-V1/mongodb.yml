@@ -17,5 +17,19 @@
         src: /root/Ansible/Ansible-RoboShop-V1/mongo.repo
         dest: /etc/yum.repos.d/mongo.repo
 
+    - name: Install MongoDB
+      ansible.builtin.dnf:
+        name: 'mongodb-org'
+        state: present
 
+    - name: Replace 127.0.0.1 with 0.0.0.0
+      ansible.builtin.replace:
+        path: /etc/mongod.conf
+        regexp: '127.0.0.1'
+        replace: '0.0.0.0 '
 
+    - name: Enable & Start MongoDB
+      ansible.builtin.systemd_service:
+        state: started
+        name: mongod
+        enabled: true

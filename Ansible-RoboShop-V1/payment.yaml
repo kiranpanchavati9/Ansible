@@ -33,6 +33,7 @@
           - python3
           - gcc
           - python3-devel
+          - unzip
         state: present
 
     - name: Ensure roboshop user exists
@@ -80,3 +81,4 @@
         name: payment
         state: restarted
         enabled: yes
+

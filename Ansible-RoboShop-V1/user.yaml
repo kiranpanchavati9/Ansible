@@ -21,14 +21,14 @@
 #systemctl restart user
 
 
-- name: User Setup
+- name: User Setup (Rocky Linux 10)
   hosts: all
   become: true
 
   tasks:
-    # 1. Match the shell script's versioning
-    - name: Disable default NodeJS and enable version 20
-      ansible.builtin.shell: dnf module disable nodejs -y; dnf module enable nodejs:20 -y
+    - name: Install NodeSource NodeJS 20 repo
+      ansible.builtin.shell: |
+        curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
 
     - name: Install NodeJS, Unzip, and Mongosh
       ansible.builtin.dnf:
@@ -41,8 +41,8 @@
     - name: Create roboshop user
       ansible.builtin.user:
         name: roboshop
+        create_home: yes
 
-    # 2. Use relative path for the service file
     - name: Copy User service file
       ansible.builtin.copy:
         src: user.service
@@ -52,14 +52,17 @@
       ansible.builtin.file:
         path: /app
         state: directory
+        owner: roboshop
+        group: roboshop
 
     - name: Download and extract User code
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip
         dest: /app
         remote_src: yes
+        owner: roboshop
+        group: roboshop
 
-    # 3. Running npm install as the roboshop user
     - name: Install NodeJS dependencies
       ansible.builtin.command: npm install
       args:
@@ -75,3 +78,4 @@
         name: user
         state: restarted
         enabled: yes
+

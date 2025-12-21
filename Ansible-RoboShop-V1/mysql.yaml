@@ -23,6 +23,13 @@
   hosts: all
   become: true
   tasks:
+
+
+    - name: Install the Repository Package
+      ansible.builtin.dnf:
+        name: dev.mysql.com
+        state: latest
+
     - name: Install the latest version of MySQL Server
       ansible.builtin.dnf:
         name: mysql-server

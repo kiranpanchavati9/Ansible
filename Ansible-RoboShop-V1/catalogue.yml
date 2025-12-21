@@ -75,7 +75,6 @@
       ansible.builtin.command: npm install
       args:
         chdir: /app
-      become_user: roboshop
 
     - name: Install MongoDB
       ansible.builtin.dnf:

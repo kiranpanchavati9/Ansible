@@ -77,7 +77,7 @@
         state: present
 
     - name: Load master data script
-      ansible.builtin.shell: mongosh --host mongod-dev.kiranpanchavati.online </app/db/master-data.js
+      ansible.builtin.shell: mongosh --host mongod-dev-01.kiranpanchavati.online </app/db/master-data.js
 
     - name: Just force systemd to reread configs (2.4 and above)
       ansible.builtin.systemd_service:

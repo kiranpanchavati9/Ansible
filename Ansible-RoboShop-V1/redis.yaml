@@ -9,7 +9,7 @@
 #systemctl restart redis
 #
 
-- name: Redis Setup (Rocky Linux 10)
+- name: Redis (Valkey) Setup – Rocky Linux 10
   hosts: all
   become: true
 
@@ -25,28 +25,29 @@
     - name: Clean dnf cache
       ansible.builtin.command: dnf clean all
 
-    - name: Install Redis
+    - name: Install Valkey (Redis replacement)
       ansible.builtin.dnf:
-        name: redis
+        name: valkey
         state: present
 
-    - name: Configure Redis bind address
+    - name: Configure Valkey bind address
       ansible.builtin.replace:
-        path: /etc/redis/redis.conf
+        path: /etc/valkey/valkey.conf
         regexp: '^bind .*'
         replace: 'bind 0.0.0.0'
 
-    - name: Disable Redis protected mode
+    - name: Disable protected mode
       ansible.builtin.replace:
-        path: /etc/redis/redis.conf
+        path: /etc/valkey/valkey.conf
         regexp: '^protected-mode yes'
         replace: 'protected-mode no'
 
-    - name: Enable and restart Redis
+    - name: Enable and restart Valkey service
       ansible.builtin.systemd:
-        name: redis
+        name: valkey
         state: restarted
         enabled: yes
+
 
 
 

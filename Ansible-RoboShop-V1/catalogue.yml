@@ -29,13 +29,14 @@
 - name: Catalogue Setup
   hosts: all
   become: true
+
   tasks:
     - name: Install NodeJS
       ansible.builtin.dnf:
-        name: 'nodejs'
+        name: nodejs
         state: present
 
-    - name: Create a user 'roboshop' with a home directory
+    - name: Create roboshop user
       ansible.builtin.user:
         name: roboshop
         create_home: yes
@@ -50,31 +51,44 @@
         src: /root/Ansible/Ansible-RoboShop-V1/mongo.repo
         dest: /etc/yum.repos.d/mongo.repo
 
-    - name: Create a directory if it does not exist
+    - name: Create /app directory
       ansible.builtin.file:
         path: /app
         state: directory
+        owner: roboshop
+        group: roboshop
 
-    - name: Install the unzip
+    - name: Install unzip
       ansible.builtin.dnf:
         name: unzip
-        state: latest
+        state: present
 
-    - name: Download and Extract
+    - name: Download and Extract Catalogue Code
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
         dest: /app
         remote_src: yes
-
-    - name: Run a command in /app directory
-      ansible.builtin.command:
-        cmd: ls -l
-        chdir: /app
+        owner: roboshop
+        group: roboshop
 
     - name: Install NodeJS dependencies
       ansible.builtin.command: npm install
       args:
         chdir: /app
+      become_user: roboshop
+
+    - name: Load MongoDB schema
+      ansible.builtin.command: mongosh < /app/schema/catalogue.js
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable & Restart Catalogue Service
+      ansible.builtin.systemd:
+        name: catalogue
+        state: restarted
+        enabled: yes
 
     - name: Install MongoDB
       ansible.builtin.dnf:

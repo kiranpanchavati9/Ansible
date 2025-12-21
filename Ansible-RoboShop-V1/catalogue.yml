@@ -34,3 +34,59 @@
       ansible.builtin.dnf:
         name: 'nodejs'
         state: present
+
+    - name: Create a user 'roboshop' with a home directory
+      ansible.builtin.user:
+        name: roboshop
+        create_home: yes
+
+    - name: Copy Catalogue Service file
+      ansible.builtin.copy:
+        src: /root/Ansible/Ansible-RoboShop-V1/catalogue.service
+        dest: /etc/systemd/system/catalogue.service
+
+    - name: Copy Mongo Repo file
+      ansible.builtin.copy:
+        src: /root/Ansible/Ansible-RoboShop-V1/mongo.repo
+        dest: /etc/yum.repos.d/mongo.repo
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: /app
+        state: directory
+
+    - name: Install the unzip
+      ansible.builtin.dnf:
+        name: unzip
+        state: latest
+
+    - name: Download and Extract
+      ansible.builtin.unarchive:
+        src: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
+        dest: /tmp/catalogue.zip
+        remote_src: yes
+
+    - name: Run a command in /app directory
+      ansible.builtin.command:
+        cmd: ls -l
+        chdir: /app
+
+    - name: Install MongoDB
+      ansible.builtin.dnf:
+        name: 'mongodb-mongosh'
+        state: present
+
+    - name: Execute master data script
+      community.mongodb.mongodb_shell:
+        login_host: "mongod-dev-01.kiranpanchavati.online"
+        file: "/app/db/master-data.js"
+
+    - name: Just force systemd to reread configs (2.4 and above)
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Start Catalogue services
+      ansible.builtin.systemd_service:
+        state: started
+        name: catalogue
+        enabled: true

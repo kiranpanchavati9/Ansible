@@ -14,7 +14,7 @@
   tasks:
     - name: Copy Mongo Repo file
       ansible.builtin.copy:
-        src: mongo.repo
+        src: /root/Ansible/Ansible-RoboShop-V1/mongo.repo
         dest: /etc/yum.repos.d/mongo.repo
 
 

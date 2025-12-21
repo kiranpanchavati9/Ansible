@@ -46,7 +46,7 @@
 
     - name: Copy nginx file
       ansible.builtin.copy:
-        src: /root/nginx.conf
+        src: /root/Ansible/Ansible-RoboShop-V1/nginx.conf
         dest: /etc/nginx/nginx.conf
 
     - name: Start NGINX services

@@ -23,17 +23,20 @@
   hosts: all
   become: true
   tasks:
+    - name: Disable default mysql module
+      ansible.builtin.shell: dnf module disable mysql -y
+      # This is a quick fix to ensure no version conflicts exist
 
-    - name: Install MySQL Server from OS repo
+    - name: Install MySQL Server
       ansible.builtin.dnf:
         name: mysql-server
-        state: present
+        state: latest
 
-    - name: Enable and start MySQL
+    - name: Start and Enable MySQL Service
       ansible.builtin.service:
         name: mysqld
         state: started
-        enabled: yes
+        enabled: true
 
 
 

@@ -14,28 +14,25 @@
   become: true
 
   tasks:
-    # ---------------- System prerequisites ----------------
+    - name: Disable default redis and enable version 6.2
+      ansible.builtin.shell: dnf module disable redis -y; dnf module enable redis:6.2 -y
+
     - name: Install Redis
       ansible.builtin.dnf:
         name: redis
         state: present
 
-    - name: Replace values
+    - name: Update listen address to 0.0.0.0
       ansible.builtin.replace:
-        path: /etc/redis/redis.conf
+        path: /etc/redis.conf  # Note: On RHEL it's usually /etc/redis.conf, not /etc/redis/redis.conf
         regexp: '127.0.0.1'
         replace: '0.0.0.0'
 
-    - name: Replace
+    - name: Disable protected mode
       ansible.builtin.replace:
-        path: /etc/redis/redis.conf
-        regexp: '/protected-mode'
+        path: /etc/redis.conf
+        regexp: 'protected-mode yes'
         replace: 'protected-mode no'
-
-    # ---------------- Service handling ----------------
-    - name: Reload systemd
-      ansible.builtin.systemd:
-        daemon_reload: yes
 
     - name: Enable & restart Redis service
       ansible.builtin.systemd:

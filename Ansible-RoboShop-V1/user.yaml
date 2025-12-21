@@ -19,13 +19,15 @@
 #
 #systemctl enable user
 #systemctl restart user
+
+
 - name: User Service Setup (Rocky Linux 10)
   hosts: all
   become: true
 
   tasks:
     ####################################################################
-    # 1. Install NodeJS 20 (NodeSource – REQUIRED for Rocky 10)
+    # 1. Install NodeJS 20 (NodeSource)
     ####################################################################
     - name: Add NodeSource NodeJS 20 repository
       ansible.builtin.shell: |
@@ -34,29 +36,20 @@
         creates: /etc/yum.repos.d/nodesource-nodejs.repo
 
     ####################################################################
-    # 2. Add MongoDB official repository
+    # 2. Add MongoDB repository (GPG disabled due to Rocky 10 crypto)
     ####################################################################
-    - name: Add MongoDB repository
+    - name: Add MongoDB repository (Rocky 10 workaround)
       ansible.builtin.copy:
         dest: /etc/yum.repos.d/mongodb-org.repo
         content: |
           [mongodb-org-7.0]
           name=MongoDB Repository
           baseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/7.0/x86_64/
-          gpgcheck=1
           enabled=1
-          gpgkey=https://pgp.mongodb.com/server-7.0.asc
+          gpgcheck=0
 
     ####################################################################
-    # 3. Import MongoDB GPG key (MANDATORY)
-    ####################################################################
-    - name: Import MongoDB GPG key
-      ansible.builtin.rpm_key:
-        key: https://pgp.mongodb.com/server-7.0.asc
-        state: present
-
-    ####################################################################
-    # 4. Install required packages
+    # 3. Install required packages
     ####################################################################
     - name: Install NodeJS, unzip, and mongosh
       ansible.builtin.dnf:
@@ -67,7 +60,7 @@
         state: present
 
     ####################################################################
-    # 5. Create roboshop user
+    # 4. Create roboshop user
     ####################################################################
     - name: Create roboshop user
       ansible.builtin.user:
@@ -75,7 +68,7 @@
         create_home: yes
 
     ####################################################################
-    # 6. Copy User service file
+    # 5. Copy User service file
     ####################################################################
     - name: Copy User systemd service file
       ansible.builtin.copy:
@@ -83,7 +76,7 @@
         dest: /etc/systemd/system/user.service
 
     ####################################################################
-    # 7. Create /app directory
+    # 6. Create /app directory
     ####################################################################
     - name: Create /app directory
       ansible.builtin.file:
@@ -93,7 +86,7 @@
         group: roboshop
 
     ####################################################################
-    # 8. Download and extract User application
+    # 7. Download and extract User application
     ####################################################################
     - name: Download and extract User application code
       ansible.builtin.unarchive:
@@ -104,7 +97,7 @@
         group: roboshop
 
     ####################################################################
-    # 9. Install NodeJS dependencies
+    # 8. Install NodeJS dependencies
     ####################################################################
     - name: Install NodeJS dependencies
       ansible.builtin.command: npm install
@@ -113,20 +106,22 @@
       become_user: roboshop
 
     ####################################################################
-    # 10. Reload systemd
+    # 9. Reload systemd
     ####################################################################
     - name: Reload systemd daemon
       ansible.builtin.systemd:
         daemon_reload: yes
 
     ####################################################################
-    # 11. Enable and restart User service
+    # 10. Enable and restart User service
     ####################################################################
     - name: Enable and restart User service
       ansible.builtin.systemd:
         name: user
         state: restarted
         enabled: yes
+
+
 
 
 

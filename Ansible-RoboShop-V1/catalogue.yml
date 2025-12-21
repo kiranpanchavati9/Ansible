@@ -31,40 +31,53 @@
   become: true
 
   tasks:
+    # ---------------- System prerequisites ----------------
     - name: Install NodeJS
       ansible.builtin.dnf:
         name: nodejs
         state: present
-
-    - name: Create roboshop user
-      ansible.builtin.user:
-        name: roboshop
-        create_home: yes
-
-    - name: Copy Catalogue Service file
-      ansible.builtin.copy:
-        src: /root/Ansible/Ansible-RoboShop-V1/catalogue.service
-        dest: /etc/systemd/system/catalogue.service
-
-    - name: Create /app directory
-      ansible.builtin.file:
-        path: /app
-        state: directory
-        owner: roboshop
-        group: roboshop
 
     - name: Install unzip
       ansible.builtin.dnf:
         name: unzip
         state: present
 
-    - name: Download and Extract Catalogue Code
+    - name: Install MongoDB Shell (mongosh)
+      ansible.builtin.dnf:
+        name: mongodb-mongosh
+        state: present
+
+    # ---------------- Application user ----------------
+    - name: Create roboshop user
+      ansible.builtin.user:
+        name: roboshop
+        create_home: yes
+
+    # ---------------- Service configuration ----------------
+    - name: Copy Catalogue service file
+      ansible.builtin.copy:
+        src: /root/Ansible/Ansible-RoboShop-V1/catalogue.service
+        dest: /etc/systemd/system/catalogue.service
+
+    # ---------------- Application setup ----------------
+    - name: Create /app directory
+      ansible.builtin.file:
+        path: /app
+        state: directory
+
+    - name: Download and extract Catalogue code
       ansible.builtin.unarchive:
         src: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
         dest: /app
         remote_src: yes
+
+    # 🔑 CRITICAL FIX (npm permission issue)
+    - name: Fix ownership of /app directory
+      ansible.builtin.file:
+        path: /app
         owner: roboshop
         group: roboshop
+        recurse: yes
 
     - name: Install NodeJS dependencies
       ansible.builtin.command: npm install
@@ -72,13 +85,7 @@
         chdir: /app
       become_user: roboshop
 
-    # ---------------- MongoDB client ----------------
-    - name: Install MongoDB Shell (mongosh)
-      ansible.builtin.dnf:
-        name: mongodb-mongosh
-        state: present
-
-    # ---------------- Idempotent schema load ----------------
+    # ---------------- MongoDB data initialization ----------------
     - name: Check if catalogue data already exists
       ansible.builtin.command: >
         mongosh --host mongod-dev-01.kiranpanchavati.online
@@ -86,7 +93,7 @@
       register: catalogue_count
       changed_when: false
 
-    - name: Load catalogue master data (only once)
+    - name: Load catalogue master data (run only once)
       ansible.builtin.command: >
         mongosh --host mongod-dev-01.kiranpanchavati.online
         < /app/db/master-data.js
@@ -97,7 +104,7 @@
       ansible.builtin.systemd:
         daemon_reload: yes
 
-    - name: Enable & Restart Catalogue Service
+    - name: Enable & restart Catalogue service
       ansible.builtin.systemd:
         name: catalogue
         state: restarted

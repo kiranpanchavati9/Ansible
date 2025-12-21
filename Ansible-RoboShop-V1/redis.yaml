@@ -19,3 +19,26 @@
       ansible.builtin.dnf:
         name: redis
         state: present
+
+    - name: Replace values
+      ansible.builtin.replace:
+        path: /etc/redis/redis.conf
+        regexp: '127.0.0.1'
+        replace: '0.0.0.0'
+
+    - name: Replace
+      ansible.builtin.replace:
+        path: /etc/redis/redis.conf
+        regexp: '/protected-mode'
+        replace: 'protected-mode no'
+
+    # ---------------- Service handling ----------------
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable & restart Redis service
+      ansible.builtin.systemd:
+        name: redis
+        state: restarted
+        enabled: yes

@@ -45,6 +45,11 @@
         dest: /usr/share/nginx/html
         remote_src: yes
 
+    - name: Copy file
+      ansible.builtin.copy:
+        src: /root/DevSecOps-Roboshop-Shell-V1/nginx.conf
+        dest: /etc/nginx/nginx.conf
+
     - name: Start NGINX services
       ansible.builtin.systemd_service:
         state: started

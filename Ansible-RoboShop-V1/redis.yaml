@@ -18,14 +18,10 @@
       ansible.builtin.command: dnf clean all
 
     - name: Disable redis module (reset)
-      ansible.builtin.command: dnf module disable redis -y
-      args:
-        warn: false
+      ansible.builtin.shell: dnf module disable redis -y
 
     - name: Enable redis 7 module
-      ansible.builtin.command: dnf module enable redis:7 -y
-      args:
-        warn: false
+      ansible.builtin.shell: dnf module enable redis:7 -y
 
     - name: Install Redis
       ansible.builtin.dnf:
@@ -49,4 +45,5 @@
         name: redis
         state: restarted
         enabled: yes
+
 

@@ -1,0 +1,77 @@
+#dnf module disable nodejs -y
+#dnf module enable nodejs:20 -y
+#
+#dnf install nodejs -y
+#
+#useradd roboshop
+#cp user.service  /etc/systemd/system/user.service
+#
+#mkdir /app
+#
+#curl -L -o /tmp/user.zip https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip
+#cd /app
+#unzip /tmp/user.zip
+#
+#cd /app
+#npm install
+#
+#systemctl daemon-reload
+#
+#systemctl enable user
+#systemctl restart user
+
+
+- name: User Setup
+  hosts: all
+  become: true
+
+  tasks:
+    # 1. Match the shell script's versioning
+    - name: Disable default NodeJS and enable version 20
+      ansible.builtin.shell: dnf module disable nodejs -y; dnf module enable nodejs:20 -y
+
+    - name: Install NodeJS, Unzip, and Mongosh
+      ansible.builtin.dnf:
+        name:
+          - nodejs
+          - unzip
+          - mongodb-mongosh
+        state: present
+
+    - name: Create roboshop user
+      ansible.builtin.user:
+        name: roboshop
+
+    # 2. Use relative path for the service file
+    - name: Copy User service file
+      ansible.builtin.copy:
+        src: user.service
+        dest: /etc/systemd/system/user.service
+
+    - name: Create /app directory
+      ansible.builtin.file:
+        path: /app
+        state: directory
+
+    - name: Download and extract User code
+      ansible.builtin.unarchive:
+        src: https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip
+        dest: /app
+        remote_src: yes
+
+    # 3. Running npm install as the roboshop user
+    - name: Install NodeJS dependencies
+      ansible.builtin.command: npm install
+      args:
+        chdir: /app
+      become_user: roboshop
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable & restart User service
+      ansible.builtin.systemd:
+        name: user
+        state: restarted
+        enabled: yes

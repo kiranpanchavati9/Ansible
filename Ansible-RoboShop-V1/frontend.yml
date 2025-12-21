@@ -15,9 +15,6 @@
 #systemctl restart nginx
 
 
-# Reference Ansible Documentation
-#https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/dnf_module.html
-
 - name: Frontend Setup
   hosts: all
   become: true
@@ -37,3 +34,14 @@
         path: /usr/share/nginx/html/
         state: directory
 
+    - name: Download and Extract
+      ansible.builtin.unarchive:
+        src: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip
+        dest: /usr/share/nginx/html
+        remote_src: yes
+
+    - name: Start NGINX services
+      ansible.builtin.systemd_service:
+        state: started
+        name: nginx
+        enabled: true

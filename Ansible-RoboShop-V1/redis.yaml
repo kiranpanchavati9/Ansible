@@ -8,45 +8,72 @@
 #systemctl enable redis
 #systemctl restart redis
 #
-
-- name: Redis (Valkey) Setup – Rocky Linux 10
+- name: Redis Setup – Rocky Linux 9 / 10
   hosts: all
   become: true
 
   tasks:
+
     - name: Enable CRB repository
       ansible.builtin.command: dnf config-manager --set-enabled crb
+      changed_when: false
 
-    - name: Install EPEL release
+    - name: Install EPEL repository
       ansible.builtin.dnf:
         name: epel-release
         state: present
 
-    - name: Clean dnf cache
+    - name: Clean DNF cache
       ansible.builtin.command: dnf clean all
+      changed_when: false
 
-    - name: Install Valkey (Redis replacement)
+    - name: Install Redis
       ansible.builtin.dnf:
-        name: valkey
+        name: redis
         state: present
 
-    - name: Configure Valkey bind address
+    # ---------------- REDIS CONFIGURATION ----------------
+
+    - name: Configure Redis bind address
       ansible.builtin.replace:
-        path: /etc/valkey/valkey.conf
+        path: /etc/redis/redis.conf
         regexp: '^bind .*'
         replace: 'bind 0.0.0.0'
 
-    - name: Disable protected mode
+    - name: Disable protected mode (for internal network access)
       ansible.builtin.replace:
-        path: /etc/valkey/valkey.conf
+        path: /etc/redis/redis.conf
         regexp: '^protected-mode yes'
         replace: 'protected-mode no'
 
-    - name: Enable and restart Valkey service
+    - name: Enable systemd supervision
+      ansible.builtin.replace:
+        path: /etc/redis/redis.conf
+        regexp: '^supervised no'
+        replace: 'supervised systemd'
+
+    - name: Ensure Redis listens on default port
+      ansible.builtin.replace:
+        path: /etc/redis/redis.conf
+        regexp: '^port .*'
+        replace: 'port 6379'
+
+    # ---------------- FIREWALL ----------------
+
+    - name: Open Redis port in firewall
+      ansible.builtin.firewalld:
+        port: 6379/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    # ---------------- SERVICE ----------------
+
+    - name: Enable and restart Redis service
       ansible.builtin.systemd:
-        name: valkey
-        state: restarted
+        name: redis
         enabled: yes
+        state: restarted
 
 
 

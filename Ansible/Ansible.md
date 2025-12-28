@@ -1,4 +1,3 @@
-````markdown
 ## What is Ansible?
 
 **Ansible** is an open-source automation tool used to **configure systems, deploy applications, and manage servers** automatically without logging into them manually.

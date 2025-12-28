@@ -96,7 +96,9 @@ timeout = 20
 ## Key Benefit
 
 ✔ Clean separation of configurations
+
 ✔ No impact on other playbooks
+
 ✔ Easy to manage environment-specific behavior
 
 By placing a customized `ansible.cfg` in each playbook directory, we can control Ansible’s behavior **per playbook category** in a simple and scalable way.

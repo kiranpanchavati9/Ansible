@@ -1,3 +1,4 @@
+````markdown
 ## What is Ansible?
 
 **Ansible** is an open-source automation tool used to **configure systems, deploy applications, and manage servers** automatically without logging into them manually.
@@ -89,19 +90,27 @@ force_color = false
 [ssh_connection]
 timeout = 20
 ```
-![alt text](<Ansible Image.png>)
+
 
 ---
 
-## Key Benefit
+## Key Benefits
 
 ✔ Clean separation of configurations
-
 ✔ No impact on other playbooks
-
 ✔ Easy to manage environment-specific behavior
 
 By placing a customized `ansible.cfg` in each playbook directory, we can control Ansible’s behavior **per playbook category** in a simple and scalable way.
+
+---
+
+## Useful Ansible Configuration Commands
+
+```bash
+ansible-config list    # List all available configuration options
+ansible-config view    # Display the active configuration file
+ansible-config dump    # Show the current effective configuration values
+```
 
 ```
 ```

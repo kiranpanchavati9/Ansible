@@ -28,7 +28,7 @@
 #systemctl restart shipping
 
 - name: Shipping Service Setup
-  hosts: all
+  hosts: shipping
   become: true
 
   tasks:

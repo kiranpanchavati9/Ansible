@@ -27,7 +27,7 @@
 #
 
 - name: Catalogue Setup
-  hosts: all
+  hosts: catalogue
   become: true
 
   tasks:

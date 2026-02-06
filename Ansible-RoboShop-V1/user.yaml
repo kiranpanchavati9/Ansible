@@ -22,7 +22,7 @@
 
 
 - name: User Service Setup (Rocky Linux 10)
-  hosts: all
+  hosts: user
   become: true
 
   tasks:

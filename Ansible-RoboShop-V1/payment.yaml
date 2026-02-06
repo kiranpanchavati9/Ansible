@@ -22,7 +22,7 @@
 
 
 - name: Payment Service Setup
-  hosts: all
+  hosts: payment
   become: true
 
   tasks:

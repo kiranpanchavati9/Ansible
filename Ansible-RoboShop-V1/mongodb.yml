@@ -8,7 +8,7 @@
 #
 #systemctl start mongod
 - name: MongoDB Setup
-  hosts: all
+  hosts: mongodb
   become: true
 
   tasks:

@@ -10,7 +10,7 @@
 
 
 - name: RabbitMQ Setup
-  hosts: all
+  hosts: rabbitmq
   become: true
 
   tasks:

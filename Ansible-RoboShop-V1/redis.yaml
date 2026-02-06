@@ -10,7 +10,7 @@
 #
 
 - name: Redis (Valkey) Setup – Rocky Linux 10
-  hosts: all
+  hosts: redis
   become: true
 
   tasks:

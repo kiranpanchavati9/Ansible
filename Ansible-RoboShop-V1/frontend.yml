@@ -15,7 +15,7 @@
 #systemctl restart nginx
 
 - name: Frontend Setup
-  hosts: all
+  hosts: frontend
   become: true
   tasks:
     - name: Install NGINX

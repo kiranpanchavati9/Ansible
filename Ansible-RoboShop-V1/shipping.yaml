@@ -86,7 +86,7 @@
 
     - name: Wait for MySQL to be reachable
       ansible.builtin.wait_for:
-        host: mysql-dev-01.kiranpanchavati.online
+        host: mysql-dev.kiranpanchavati.online
         port: 3306
         timeout: 60
 
@@ -94,7 +94,7 @@
 
     - name: Load DB schema (run as roboshop)
       ansible.builtin.shell: |
-        mysql -h mysql-dev-01.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/schema.sql
+        mysql -h mysql-dev.kiranpanchavati.online -uroboshop -pRoboShop@1 < /app/db/schema.sql
       args:
         executable: /bin/bash
 
@@ -108,7 +108,7 @@
         mysql -uroot -pRoboShop@1 <<< "{{ app_user_sql.content | b64decode }}"
       args:
         executable: /bin/bash
-      delegate_to: mysql-dev-01.kiranpanchavati.online
+      delegate_to: mysql-dev.kiranpanchavati.online
 
     - name: Load master data (run as roboshop)
       ansible.builtin.shell: |
